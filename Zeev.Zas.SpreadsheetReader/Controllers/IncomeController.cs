@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Zeev.Zas.SpreadsheetReader.Dtos;
 
 namespace Zeev.Zas.SpreadsheetReader.Controllers;
 
@@ -11,14 +12,26 @@ public class IncomeController : GoogleSheetsController
     public IncomeController(IConfiguration configuration) : base(configuration) { }
 
     [HttpGet("pricing")]
-    public async Task<IActionResult> GetPricing() => await GetSheetDataAsync("Income:Pricing");
+    public async Task<IActionResult> GetPricing(int pageNumber = 1, int pageSize = 50) => await GetPagedSheetDatasync("Income:Pricing", pageNumber, pageSize);
+
+    [HttpPost("pricing")]
+    public async Task<IActionResult> QueryPricing([FromBody] QueryRequest dto) => await QuerySheetDataAsync("Income:Pricing", dto.Key, dto.Value);
 
     [HttpGet("human-resources")]
-    public async Task<IActionResult> GetHumanResources() => await GetSheetDataAsync("Income:HumanResources");
+    public async Task<IActionResult> GetHumanResources(int pageNumber = 1, int pageSize = 50) => await GetPagedSheetDatasync("Income:HumanResources", pageNumber, pageSize);
+
+    [HttpPost("human-resources")]
+    public async Task<IActionResult> QueryHumanResources([FromBody] QueryRequest dto) => await QuerySheetDataAsync("Income:HumanResources", dto.Key, dto.Value);
 
     [HttpGet("daily/brazil")]
-    public async Task<IActionResult> GetBrazilDaily() => await GetSheetDataAsync("Income:Daily:Brazil");
+    public async Task<IActionResult> GetBrazilDaily(int pageNumber = 1, int pageSize = 50) => await GetPagedSheetDatasync("Income:Daily:Brazil", pageNumber, pageSize);
+
+    [HttpPost("daily/brazil")]
+    public async Task<IActionResult> QueryBrazilDaily([FromBody] QueryRequest dto) => await QuerySheetDataAsync("Income:Daily:Brazil", dto.Key, dto.Value);
 
     [HttpGet("daily/foreign")]
-    public async Task<IActionResult> GetForeignDaily() => await GetSheetDataAsync("Income:Daily:Foreign");
+    public async Task<IActionResult> GetForeignDaily(int pageNumber = 1, int pageSize = 50)  => await GetPagedSheetDatasync("Income:Daily:Foreign", pageNumber, pageSize);
+
+    [HttpPost("daily/foreign")]
+    public async Task<IActionResult> QueryForeignDaily([FromBody] QueryRequest dto) => await QuerySheetDataAsync("Income:Daily:Foreign", dto.Key, dto.Value);
 }

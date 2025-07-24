@@ -1,8 +1,6 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace Zeev.Zas.SpreadsheetReader.Service;
 
@@ -22,7 +20,7 @@ public class GoogleSheetsService
         _credentialsPath = credentialsPath ?? throw new ArgumentNullException(nameof(credentialsPath));
     }
 
-    public async Task<string?> GetSheetDataAsJsonAsync()
+    public async Task<List<Dictionary<string, object?>>> GetSheetDataAsync()
     {
         var service = await InitializeGoogleSheetsApiAsync();
         var values = ReadRawSheetValues(service);
@@ -30,10 +28,23 @@ public class GoogleSheetsService
         if (values is null || values.Count == 0)
             throw new InvalidOperationException("No data found in the spreadsheet.");
 
-        var parsed = ConvertToDictionaryList(values);
-        var json = JsonSerializer.Serialize(parsed, new JsonSerializerOptions { WriteIndented = true });
+        return ConvertToDictionaryList(values);
+    }
 
-        return Regex.Unescape(json);
+    public async Task<List<Dictionary<string, object?>>> QuerySheetDataAsync(string key, string value)
+    {
+        var service = await InitializeGoogleSheetsApiAsync();
+        var values = ReadRawSheetValues(service);
+
+        if (values is null || values.Count == 0)
+            throw new InvalidOperationException("No data found in the spreadsheet.");
+
+        var dictionaryList = ConvertToDictionaryList(values);
+        var filtered = dictionaryList
+            .Where(item => item.TryGetValue(key, out var fieldValue) && fieldValue?.ToString()?.Contains(value, StringComparison.OrdinalIgnoreCase) == true)
+            .ToList();
+
+        return filtered;
     }
 
     private async Task<SheetsService> InitializeGoogleSheetsApiAsync()
